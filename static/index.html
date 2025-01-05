@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Recommendations</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #animeList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .anime-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .anime-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .anime-card img {
+            width: 100%;
+            height: 337px;
+            object-fit: cover;
+        }
+        .anime-info {
+            padding: 15px;
+        }
+        .anime-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .anime-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        #alertContainer {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+      }
+        #loaderContainer {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+      }
+  
+      .loader-content {
+          background-color: white;
+          padding: 3rem;
+          border-radius: 10px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          text-align: center;
+          max-width: 80%;
+          width: 400px;
+          animation: fadeIn 0.3s ease-out;
+      }
+  
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+  
+      .loader {
+          width: 120px;
+          height: 32px;
+          padding: 3px 0;
+          box-sizing: border-box;
+          display: flex;
+          animation: loaderBg 3s infinite steps(6);
+          background:
+              linear-gradient(#4CAF50 0 0) 0 0/0% 100% no-repeat,
+              radial-gradient(circle 4px, #45a049 90%, #0000) 0 0/20% 100%
+              #4CAF50;
+          overflow: hidden;
+          margin: 20px auto;
+      }
+      .loader::before {
+          content: "";
+          width: 26px;
+          transform: translate(-100%);
+          border-radius: 50%;
+          background: #ffff2d;
+          animation: 
+              loaderMove .25s .153s infinite steps(5) alternate,
+              loaderTravel 3s infinite linear;
+      }
+      @keyframes loaderBg { 
+          100% {background-size:120% 100%, 20% 100%}
+      }
+      @keyframes loaderMove { 
+          0% {clip-path: polygon(50% 50%, 100% 0, 100% 0, 0 0, 0 100%, 100% 100%, 100% 100%)}
+          100% {clip-path: polygon(50% 50%, 100% 65%, 100% 0, 0 0, 0 100%, 100% 100%, 100% 35%)}
+      }
+      @keyframes loaderTravel { 
+          100% {transform: translate(120px)}
+      }
+  
+      .loader-text h2 {
+          color: #4CAF50;
+          margin-bottom: 0.5rem;
+          font-size: 1.75rem;
+      }
+  
+      .loader-text p {
+          color: #666;
+          margin: 0;
+          font-size: 1.1rem;
+      }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <button id="scrapButton">Scrap the Details</button>
+        <button id="showButton">Show Anime Recommendation</button>
+    </div>
+    <div id="loaderContainer" style="display: none;">
+      <div class="loader-content">
+          <div class="loader"></div>
+          <div class="loader-text">
+              <h2>Loading...</h2>
+              <p>Please wait while we fetch the data. This will take some time.</p>
+          </div>
+          <br>
+        <div class="button-container" style="justify-content: center;">
+            <button onclick="document.getElementById('loaderContainer').style.display = 'none';">Close</button>
+            <button id='stop' >Cancel</button>
+        </div>
+      </div>
+      
+  </div>
+  <div id="alertContainer" style="display: none;">
+    <div class="loader-content">
+        <div class="loader-text">
+            <h2>Scraping details is Completed.</h2>
+            <p> This button is now locked.</p>
+        </div>
+        <br>
+        <div class="button-container" style="justify-content: center;">
+            <button onclick="document.getElementById('alertContainer').style.display = 'none';">Close</button>
+        </div>
+        </div>
+        </div>
+</div>
+    <div id="animeList"></div>
+
+    <script>
+        const scrapButton = document.getElementById('scrapButton');
+        const showButton = document.getElementById('showButton');
+        const animeList = document.getElementById('animeList');
+        const loaderContainer = document.getElementById('loaderContainer');
+        const stop = document.getElementById('stop');
+
+        scrapButton.addEventListener('click', checkStatus);
+        showButton.addEventListener('click', fetchAnimeList);
+        stop.addEventListener('click', sendCancel);
+
+        async function sendCancel() {
+        try
+        {
+        const response = await fetch('/stop');
+        const data = await response.json();
+                if (data.message === 'success') {
+                  loaderContainer.style.display = 'none';
+                  const alertContainer = document.getElementById('alertContainer');
+
+                    alertContainer.style.display = 'flex';
+                    alertContainer.querySelector('h2').textContent = 'Scraping details is stopped.';
+                    alertContainer.querySelector('p').textContent = ' Press \"Show Anime Recommendation\" button to View the Anime List.';
+                    
+                }
+            }
+            catch(error ){ 
+                console.error('Error stopping the scraping process:', error);
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.style.display = 'flex';
+                alertContainer.querySelector('h2').textContent = 'Error';
+                alertContainer.querySelector('p').textContent = 'Failed to stop the scraping process. Please try again.';
+            }
+            
+            }
+            
+        
+        async function checkStatus() {
+            loaderContainer.style.display = 'flex';
+            try {
+                const response = await fetch('/add');
+                
+                const data = await response.json();
+                if (data.message === 'success') {
+                    scrapButton.disabled = true;
+                    const alertContainer = document.getElementById('alertContainer');
+                    alertContainer.style.display = 'flex';
+                    alertContainer.querySelector('h2').textContent = 'Scraping details is Completed.';
+                    alertContainer.querySelector('p').textContent = ' This button is now locked.';
+                }
+                else if(data.message === 'stopped')
+                {
+                    //do nothing
+                }
+            } catch (error) {
+                console.error('Error fetching anime list:', error);
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.style.display = 'flex';
+                alertContainer.querySelector('h2').textContent = 'Error';
+                alertContainer.querySelector('p').textContent = 'Failed to fetch anime list. Please try again.';
+
+            } finally {
+                loaderContainer.style.display = 'none';
+            }
+        }
+
+        async function fetchAnimeList() {
+            loaderContainer.style.display = 'flex';
+            const buttons = loaderContainer.querySelectorAll('button');
+            buttons.forEach(button => button.style.display = 'none');
+            try {
+                const response = await fetch('/show');
+                const data = await response.json();
+                displayAnimeList(data.anime);
+            } catch (error) {
+                console.error('Error fetching anime list:', error);
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.style.display = 'flex';
+                alertContainer.querySelector('h2').textContent = 'Error';
+                alertContainer.querySelector('p').textContent = 'Failed to fetch anime list. Please try again.';
+                
+            } finally {
+                loaderContainer.style.display = 'none';
+                const buttons = loaderContainer.querySelectorAll('button');
+            buttons.forEach(button => button.style.display = '');
+            }
+        }
+
+        function displayAnimeList(animeData) {
+            animeList.innerHTML = '';
+            animeData.forEach(anime => {
+                const animeCard = document.createElement('div');
+                animeCard.className = 'anime-card';
+                animeCard.innerHTML = `
+                    <img src="${anime.image}" alt="${anime.Engname}" width="225" height="337">
+                    <div class="anime-info">
+                        <h3>${anime.Engname}</h3>
+                        <p><strong>Japanese Name:</strong> ${anime.Japname}</p>
+                        <p><strong>Type:</strong> ${anime.Type}</p>
+                        <p><strong>Status:</strong> ${anime.status}</p>
+                        <p><strong>Genre:</strong> ${anime.genre}</p>
+                        <p><strong>Episodes:</strong> ${anime.episodes}</p>
+                    </div>
+                `;
+                animeList.appendChild(animeCard);
+            });
+        }
+    </script>
+</body>
+</html>
