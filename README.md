@@ -1,0 +1,1 @@
+This project is a web application built with Flask, SQLAlchemy, Beautiful Soup, and Selenium that provides anime recommendations. Users can view anime details. The application uses an SQLite database to store the details.
