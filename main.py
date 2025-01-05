@@ -1,6 +1,5 @@
 from flask import request, jsonify, render_template,Flask,redirect,url_for
 from flask_sqlalchemy import SQLAlchemy
-import json
 from api import scrap,close
 
 app = Flask(__name__,template_folder='static')
@@ -65,6 +64,6 @@ def stop():
     return jsonify({'message': 'success'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3000)
+    app.run(debug=True)
     db.drop_all()
     db.create_all()
